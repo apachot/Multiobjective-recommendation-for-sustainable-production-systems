@@ -8,3 +8,5 @@ We present a recommendation system to help rebuild sustainable production system
   - The need to develop greener productions that respect the environment.
 
   The recommendation system that we propose incorporates territorial policy as a weighting of objectives. This "configuration" acts directly on the system to influence the recommended productive jumps. Each objective is defined to be computed directly from open data available for most countries without requiring external data.
+
+Presented at the MORS workshop held in conjunction with the 15th ACM Conference on Recommender Systems (RecSys), 2021, in Amsterdam, Netherlands.
