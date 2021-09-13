@@ -11,7 +11,7 @@ def minmax_norm(df_input):
     
     return df_input
 
-jump_level = 0.75
+jump_level = 0.80
 
 territory = "43" #french department
 
@@ -57,9 +57,13 @@ productive_jumps[1:,2] = minmax_norm(productive_jumps[1:,2])
 
 
 print('---------------Production Units on a territory-------------')
-establishment =  [print(establishments_test[j,5], ', activity=', establishments_test[j,1],'(siret =', establishments_test[j,0], ')') for j in range (0, len(establishments_test))]
+for i in range(0, len(establishments_test)):
+	idx_check_activity =  np.where(correspondance_HS2017_NACE2[:,0]==float(establishments_test[i,1]))
+	if (len(idx_check_activity[0]) > 0):
+		print(establishments_test[i,5], ', activity=', establishments_test[i,1],'(siret =', establishments_test[i,0], ')')
 
-siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056" #33760546300021
+
+siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056"
 print('---------------------Production Unit-----------------------')
 
 
@@ -88,7 +92,6 @@ for i in range(0, len(idx_activities[0])):
 	print('product #',i+1,' HS code:',hs_code)
 	print('product #',i+1,' Description:',nomenclature_HS2017[idx_hs_nomenclature[0],1][0])
 	# measuring productive jumps
-	print('--------------------Productive jumps-----------------------')
 	idx_jumps =  np.where(productive_jumps[:,0]==int(hs_code))
 	if (len(idx_jumps[0]) > 0):
 		for j in range(0, len(idx_jumps[0])):
@@ -96,49 +99,49 @@ for i in range(0, len(idx_activities[0])):
 			hs_code_jump = productive_jumps[idx_jumps[0][j]][1]
 			jump_description = ""
 			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code))):
-				print('product jump HS1992 code:',hs_code_jump)
+				#print('product jump HS1992 code:',hs_code_jump)
 				# jumps are in HS1992, we should convert in HS2017
 				idx_correspondence=  np.where(correspondance_HS2017_HS1992[:,1]==float(hs_code_jump))
 				if (len(idx_correspondence[0]) > 0):
 					hs_code_jump = correspondance_HS2017_HS1992[idx_correspondence[0],0][0]
-					print('product jump HS2017 code:',hs_code_jump)
+					#print('product jump HS2017 code:',hs_code_jump)
 				
 				idx_hs_nomenclature2 =  np.where(nomenclature_HS2017[:,0]==float(hs_code_jump))
 				if (len(idx_hs_nomenclature2[0]) > 0):
 					jump_description = nomenclature_HS2017[idx_hs_nomenclature2[0],1][0]
-					print('product jump description:',jump_description)
-				print('product jump proximity:',proximity_jump)
+					#print('product jump description:',jump_description)
+				#print('product jump proximity:',proximity_jump)
 
 				economic_growth_value = 0
 				idx_ranking_economic_growth =  np.where(ranking_economic_growth[:,0]==int(hs_code_jump))
 				if (len(idx_ranking_economic_growth[0]) > 0):
 					economic_growth_value = ranking_economic_growth[idx_ranking_economic_growth[0],1][0]
-				print('product jump economic_growth:', economic_growth_value)
+				#print('product jump economic_growth:', economic_growth_value)
 
 				productive_resilience_value = 0
 				idx_ranking_productive_resilience =  np.where(ranking_productive_resilience[:,0]==int(hs_code_jump))
 				if (len(idx_ranking_productive_resilience[0]) > 0):
 					productive_resilience_value = ranking_productive_resilience[idx_ranking_productive_resilience[0],1][0]
-				print('product jump productive_resilience:', productive_resilience_value)
+				#print('product jump productive_resilience:', productive_resilience_value)
 
 				securing_basic_necessities_value = 0
 				idx_ranking_securing_basic_necessities =  np.where(ranking_securing_basic_necessities[:,0]==int(hs_code_jump))
 				if (len(idx_ranking_securing_basic_necessities[0]) > 0):
 					securing_basic_necessities_value = ranking_securing_basic_necessities[idx_ranking_securing_basic_necessities[0],2][0]
-				print('product jump securing_basic_necessities:', securing_basic_necessities_value)
+				#print('product jump securing_basic_necessities:', securing_basic_necessities_value)
 
 				idx_ranking_green_production =  np.where(ranking_green_production[:,0]==int(hs_code_jump))
 				
 				green_production_value = 0
 				if (len(idx_ranking_green_production[0]) > 0):
 					green_production_value = ranking_green_production[idx_ranking_green_production[0],1][0]
-				print('product jump green_production:', green_production_value)
+				#print('product jump green_production:', green_production_value)
 
 				idx_ranking_competitive_advantage =  np.where((ranking_competitive_advantage[:,0]==int(territory)) & (ranking_competitive_advantage[:,1]==int(hs_code_jump))) #& (ranking_competitive_advantage[:,1]==int(hs_code_jump))	
 				competitive_advantage_value = 0
 				if (len(idx_ranking_competitive_advantage[0]) > 0):
 					competitive_advantage_value = ranking_competitive_advantage[idx_ranking_competitive_advantage[0],6][0]
-				print('product jump competitive_advantage:', competitive_advantage_value)
+				#print('product jump competitive_advantage:', competitive_advantage_value)
 
 				total_weight = (W_a_0 * proximity_jump) 
 				+ (W_a_1 * competitive_advantage_value) 
@@ -146,7 +149,7 @@ for i in range(0, len(idx_activities[0])):
 				+ (W_a_3 * productive_resilience_value) 
 				+ (W_a_4 * securing_basic_necessities_value)
 				+ (W_a_5 * green_production_value)
-				print("total_score:", total_weight)
+				#print("total_score:", total_weight)
 
 				weights = np.vstack([weights, [hs_code_jump,jump_description,total_weight]])
 
@@ -155,6 +158,7 @@ weights_values = weights[:,2]
 weights_values_indexes = weights_values.argsort()
 weights_values_indexes = weights_values_indexes[::-1]
 weights = weights[weights_values_indexes][:7]
+print('--------------------Productive jumps-----------------------')
 print(weights)
 
 
