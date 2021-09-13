@@ -11,7 +11,7 @@ def minmax_norm(df_input):
     
     return df_input
 
-jump_level = 0.5
+jump_level = 0.75
 
 territory = "43" #french department
 
@@ -23,7 +23,8 @@ W_a_3 = .1 # Objective #4: Improve the resilience of the production system
 W_a_4 = .1 # Objective #5: Secure the production of essential goods
 W_a_5 = .1 # Objective #6: Promote the production of environmental products
 
-nomenclature_HS1992 = pd.read_csv('./nomenclatures/HS1992_4digits.csv', delimiter=',', header=1).to_numpy()
+nomenclature_HS2017 = pd.read_csv('./nomenclatures/HS2017_4digits.csv', delimiter=',', header=1).to_numpy()
+correspondance_HS2017_HS1992 = pd.read_csv('./correspondence_tables/correspondance_HS2017_HS1992_4digits.csv', delimiter=',', header=1).to_numpy()
 correspondance_HS2017_NACE2 = pd.read_csv('./correspondence_tables/correspondance_NACE_2_HS_2017_4digits_weighted.csv', delimiter=',', header=1).to_numpy()
 nomenclature_NACE2 = pd.read_csv('./nomenclatures/NACE_2.csv', delimiter=',', header=None).to_numpy()
 productive_jumps = pd.read_csv('./productive_jumps/hs92_proximities.csv', delimiter=',', header=1, dtype={'proximity': float}).to_numpy()
@@ -56,9 +57,9 @@ productive_jumps[1:,2] = minmax_norm(productive_jumps[1:,2])
 
 
 print('---------------Production Units on a territory-------------')
-establishment =  [print(establishments_test[j,0]) for j in range (0, len(establishments_test))]
+establishment =  [print(establishments_test[j,5], ', activity=', establishments_test[j,1],'(siret =', establishments_test[j,0], ')') for j in range (0, len(establishments_test))]
 
-siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056"
+siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056" #33760546300021
 print('---------------------Production Unit-----------------------')
 
 
@@ -81,11 +82,11 @@ weights = ['hs_code', 'description', 'weight']
 
 for i in range(0, len(idx_activities[0])):
 
-	idx_hs_nomenclature =  np.where(nomenclature_HS1992==float(correspondance_HS2017_NACE2[idx_activities[0][i]][1]))
+	idx_hs_nomenclature =  np.where(nomenclature_HS2017==float(correspondance_HS2017_NACE2[idx_activities[0][i]][1]))
 	#print (idx_ahs_nomenclature)
-	hs_code = nomenclature_HS1992[idx_hs_nomenclature[0],0][0]
+	hs_code = nomenclature_HS2017[idx_hs_nomenclature[0],0][0]
 	print('product #',i+1,' HS code:',hs_code)
-	print('product #',i+1,' Description:',nomenclature_HS1992[idx_hs_nomenclature[0],1][0])
+	print('product #',i+1,' Description:',nomenclature_HS2017[idx_hs_nomenclature[0],1][0])
 	# measuring productive jumps
 	print('--------------------Productive jumps-----------------------')
 	idx_jumps =  np.where(productive_jumps[:,0]==int(hs_code))
@@ -95,10 +96,16 @@ for i in range(0, len(idx_activities[0])):
 			hs_code_jump = productive_jumps[idx_jumps[0][j]][1]
 			jump_description = ""
 			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code))):
-				print('product jump HS code:',hs_code_jump)
-				idx_hs_nomenclature2 =  np.where(nomenclature_HS1992==float(hs_code_jump))
+				print('product jump HS1992 code:',hs_code_jump)
+				# jumps are in HS1992, we should convert in HS2017
+				idx_correspondence=  np.where(correspondance_HS2017_HS1992[:,1]==float(hs_code_jump))
+				if (len(idx_correspondence[0]) > 0):
+					hs_code_jump = correspondance_HS2017_HS1992[idx_correspondence[0],0][0]
+					print('product jump HS2017 code:',hs_code_jump)
+				
+				idx_hs_nomenclature2 =  np.where(nomenclature_HS2017[:,0]==float(hs_code_jump))
 				if (len(idx_hs_nomenclature2[0]) > 0):
-					jump_description = nomenclature_HS1992[idx_hs_nomenclature2[0],1][0]
+					jump_description = nomenclature_HS2017[idx_hs_nomenclature2[0],1][0]
 					print('product jump description:',jump_description)
 				print('product jump proximity:',proximity_jump)
 
@@ -147,7 +154,7 @@ weights = np.unique(weights, axis=0)
 weights_values = weights[:,2]
 weights_values_indexes = weights_values.argsort()
 weights_values_indexes = weights_values_indexes[::-1]
-weights = weights[weights_values_indexes][:5]
+weights = weights[weights_values_indexes][:7]
 print(weights)
 
 
