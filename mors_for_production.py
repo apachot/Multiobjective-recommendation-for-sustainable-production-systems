@@ -63,7 +63,7 @@ for i in range(0, len(establishments_test)):
 		print(establishments_test[i,5], ', activity=', establishments_test[i,1],'(siret =', establishments_test[i,0], ')')
 
 
-siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "58735043000035" #47916269500056" #58735043000035
+siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056"
 print('---------------------Production Unit-----------------------')
 
 
