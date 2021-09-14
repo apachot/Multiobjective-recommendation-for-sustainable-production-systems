@@ -11,7 +11,7 @@ def minmax_norm(df_input):
     
     return df_input
 
-jump_level = 0.80
+jump_level = 0.70
 
 territory = "43" #french department
 
@@ -98,7 +98,7 @@ for i in range(0, len(idx_activities[0])):
 			proximity_jump = productive_jumps[idx_jumps[0][j]][2]
 			hs_code_jump = productive_jumps[idx_jumps[0][j]][1]
 			jump_description = ""
-			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code))):
+			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code)) and (str(hs_code).zfill(4)[0:1] != '0')  and (str(hs_code).zfill(4)[0:2] != '10') ):
 				#print('product jump HS1992 code:',hs_code_jump)
 				# jumps are in HS1992, we should convert in HS2017
 				idx_correspondence=  np.where(correspondance_HS2017_HS1992[:,1]==float(hs_code_jump))
