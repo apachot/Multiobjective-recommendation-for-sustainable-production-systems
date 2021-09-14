@@ -18,10 +18,11 @@ territory = "43" #french department
 # setting weights
 W_a_0 = .3 # Objective #1: Diversify production
 W_a_1 = .3 # Objective #2: Increase the competitive advantage
-W_a_2 = .1 # Objective #3: Improve economic performance
+W_a_2 = .15 # Objective #3: Improve economic performance
 W_a_3 = .1 # Objective #4: Improve the resilience of the production system
 W_a_4 = .1 # Objective #5: Secure the production of essential goods
-W_a_5 = .1 # Objective #6: Promote the production of environmental products
+W_a_5 = .05 # Objective #6: Promote the production of environmental products
+
 
 nomenclature_HS2017 = pd.read_csv('./nomenclatures/HS2017_4digits.csv', delimiter=',', header=1).to_numpy()
 correspondance_HS2017_HS1992 = pd.read_csv('./correspondence_tables/correspondance_HS2017_HS1992_4digits.csv', delimiter=',', header=1).to_numpy()
@@ -82,7 +83,7 @@ print('-----------------------Productions-------------------------')
 # looking for production
 idx_activities =  np.where(correspondance_HS2017_NACE2[:,0]==float(activity))
 #print (idx_activities)
-weights = ['hs_code', 'description', 'weight']
+weights = ['hs_code', 'description', 'weight', 'proximity_jump', 'competitive_advantage_value', 'economic_growth_value', 'productive_resilience_value', 'securing_basic_necessities_value', 'green_production_value']
 
 for i in range(0, len(idx_activities[0])):
 
@@ -97,6 +98,7 @@ for i in range(0, len(idx_activities[0])):
 		for j in range(0, len(idx_jumps[0])):
 			proximity_jump = productive_jumps[idx_jumps[0][j]][2]
 			hs_code_jump = productive_jumps[idx_jumps[0][j]][1]
+			hs_code_jump_92 = hs_code_jump
 			jump_description = ""
 			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code)) and (str(hs_code).zfill(4)[0:1] != '0')  and (str(hs_code).zfill(4)[0:2] != '10') ):
 				#print('product jump HS1992 code:',hs_code_jump)
@@ -141,17 +143,10 @@ for i in range(0, len(idx_activities[0])):
 				competitive_advantage_value = 0
 				if (len(idx_ranking_competitive_advantage[0]) > 0):
 					competitive_advantage_value = ranking_competitive_advantage[idx_ranking_competitive_advantage[0],6][0]
-				#print('product jump competitive_advantage:', competitive_advantage_value)
+				print('product jump competitive_advantage:', competitive_advantage_value)
 
-				total_weight = (W_a_0 * proximity_jump) 
-				+ (W_a_1 * competitive_advantage_value) 
-				+ (W_a_2 * economic_growth_value) 
-				+ (W_a_3 * productive_resilience_value) 
-				+ (W_a_4 * securing_basic_necessities_value)
-				+ (W_a_5 * green_production_value)
-				#print("total_score:", total_weight)
-
-				weights = np.vstack([weights, [hs_code_jump,jump_description,total_weight]])
+				total_weight = W_a_0 * proximity_jump + W_a_1 * competitive_advantage_value + W_a_2 * economic_growth_value + W_a_3 * productive_resilience_value + W_a_4 * (1.0-securing_basic_necessities_value) + W_a_5 * green_production_value
+				weights = np.vstack([weights, [hs_code_jump, jump_description, total_weight, proximity_jump, competitive_advantage_value, economic_growth_value, productive_resilience_value, (1-securing_basic_necessities_value), green_production_value]])
 
 weights = np.unique(weights, axis=0)
 weights_values = weights[:,2]
