@@ -5,23 +5,22 @@ import csv
 from sklearn.preprocessing import normalize
 
 def minmax_norm(df_input):
-    df_input -= np.mean(df_input, axis=0)
-    df_input /= np.std(df_input, axis=0)
     df_input = (df_input - df_input.min()) / ( df_input.max() - df_input.min())
-    
     return df_input
 
-jump_level = 0.70
+jump_level = 0.4
 
 territory = "43" #french department
 
 # setting weights
-W_a_0 = .3 # Objective #1: Diversify production
-W_a_1 = .3 # Objective #2: Increase the competitive advantage
-W_a_2 = .15 # Objective #3: Improve economic performance
-W_a_3 = .1 # Objective #4: Improve the resilience of the production system
-W_a_4 = .1 # Objective #5: Secure the production of essential goods
-W_a_5 = .05 # Objective #6: Promote the production of environmental products
+W_a_0 = 1 # Objective #1: Diversify production
+W_a_1 = 1 # Objective #2: Increase the competitive advantage
+W_a_2 = 1 # Objective #3: Improve economic growth
+W_a_3 = 1 # Objective #4: Improve the resilience of the production system
+W_a_4 = 1 # Objective #5: Secure the production of essential goods
+W_a_5 = 1 # Objective #6: Promote the production of environmental products
+
+
 
 nomenclature_HS2017 = pd.read_csv('./nomenclatures/HS2017_4digits.csv', delimiter=',', header=1).to_numpy()
 correspondance_HS2017_HS1992 = pd.read_csv('./correspondence_tables/correspondance_HS2017_HS1992_4digits.csv', delimiter=',', header=1).to_numpy()
@@ -34,10 +33,10 @@ establishments_test = pd.read_csv('./companies/etablishments-france-department43
 
 # loading computed ranking
 # 1. ranking_competitive_advantage
-ranking_competitive_advantage = pd.read_csv('./computed_ranking/ranking_competitive_advantage.csv', delimiter=',', header=1, dtype={'hs4': int, 'local_rca': float}).to_numpy()
+ranking_competitive_advantage = pd.read_csv('./computed_ranking/ranking_competitive_advantage43.csv', delimiter=',', header=1, dtype={'hs4': int, 'local_rca': float, 'rca_norm': float}).to_numpy()
 
 # 2. ranking_economic_growth
-ranking_economic_growth = pd.read_csv('./computed_ranking/ranking_economic_growth.csv', delimiter=',', header=1, dtype={'PCI_2019': float}).to_numpy()
+ranking_economic_growth = pd.read_csv('./computed_ranking/ranking_economic_growth.csv', delimiter=',', header=1, dtype={'pci_norm': float}).to_numpy()
 
 # 3. ranking_green_production
 ranking_green_production = pd.read_csv('./computed_ranking/ranking_green_production.csv', delimiter=',', header=1).to_numpy()
@@ -49,8 +48,8 @@ ranking_productive_resilience = pd.read_csv('./computed_ranking/ranking_producti
 ranking_securing_basic_necessities = pd.read_csv('./computed_ranking/ranking_securing_basic_necessities.csv', delimiter=',', header=1, dtype={'maslow_normalized': float}).to_numpy()
 
 # normalize data
-ranking_competitive_advantage[1:,6] = minmax_norm(ranking_competitive_advantage[1:,6])
-ranking_economic_growth[1:,1] = minmax_norm(ranking_economic_growth[1:,1])
+ranking_competitive_advantage[1:,7] = minmax_norm(ranking_competitive_advantage[1:,7])
+ranking_economic_growth[1:,2] = minmax_norm(ranking_economic_growth[1:,2])
 ranking_productive_resilience[1:,5] = minmax_norm(ranking_productive_resilience[1:,5])
 ranking_securing_basic_necessities[1:,2] = minmax_norm(ranking_securing_basic_necessities[1:,2])
 productive_jumps[1:,2] = minmax_norm(productive_jumps[1:,2])
@@ -63,7 +62,7 @@ for i in range(0, len(establishments_test)):
 		print(establishments_test[i,5], ', activity=', establishments_test[i,1],'(siret =', establishments_test[i,0], ')')
 
 
-siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056"
+siret = input("Enter a valid SIRET number: (default : 47916269500056) ") or "47916269500056" 
 print('---------------------Production Unit-----------------------')
 
 
@@ -101,7 +100,9 @@ for i in range(0, len(idx_activities[0])):
 			jump_description = ""
 			hs_meta_category = int(str(int(hs_code)).zfill(4)[0:1])
 			jump_meta_category = int(str(int(hs_code_jump)).zfill(4)[0:1])
-			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code)) and ((hs_meta_category == jump_meta_category) or (hs_meta_category == (jump_meta_category-1)) or (hs_meta_category == (jump_meta_category+1)))):
+
+			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code)) and (hs_meta_category == jump_meta_category)):
+				
 				#print('product jump HS1992 code:',hs_code_jump)
 				# jumps are in HS1992, we should convert in HS2017
 				idx_correspondence=  np.where(correspondance_HS2017_HS1992[:,1]==float(hs_code_jump))
@@ -118,7 +119,7 @@ for i in range(0, len(idx_activities[0])):
 				economic_growth_value = 0
 				idx_ranking_economic_growth =  np.where(ranking_economic_growth[:,0]==int(hs_code_jump))
 				if (len(idx_ranking_economic_growth[0]) > 0):
-					economic_growth_value = ranking_economic_growth[idx_ranking_economic_growth[0],1][0]
+					economic_growth_value = ranking_economic_growth[idx_ranking_economic_growth[0],2][0]
 				#print('product jump economic_growth:', economic_growth_value)
 
 				productive_resilience_value = 0
@@ -143,17 +144,23 @@ for i in range(0, len(idx_activities[0])):
 				idx_ranking_competitive_advantage =  np.where((ranking_competitive_advantage[:,0]==int(territory)) & (ranking_competitive_advantage[:,1]==int(hs_code_jump))) #& (ranking_competitive_advantage[:,1]==int(hs_code_jump))	
 				competitive_advantage_value = 0
 				if (len(idx_ranking_competitive_advantage[0]) > 0):
-					competitive_advantage_value = ranking_competitive_advantage[idx_ranking_competitive_advantage[0],6][0]
+					competitive_advantage_value = ranking_competitive_advantage[idx_ranking_competitive_advantage[0],7][0]
 				#print('product jump competitive_advantage:', competitive_advantage_value)
 
 				total_weight = W_a_0 * proximity_jump + W_a_1 * competitive_advantage_value + W_a_2 * economic_growth_value + W_a_3 * productive_resilience_value + W_a_4 * (1.0-securing_basic_necessities_value) + W_a_5 * green_production_value
 				weights = np.vstack([weights, [hs_code_jump, jump_description, total_weight, proximity_jump, competitive_advantage_value, economic_growth_value, productive_resilience_value, (1-securing_basic_necessities_value), green_production_value]])
 
+				#removing duplicates
+				unique_keys, indices = np.unique(weights[:,0], return_index=True)
+				weights = weights[indices]
 weights = np.unique(weights, axis=0)
+
+
 weights_values = weights[:,2]
 weights_values_indexes = weights_values.argsort()
 weights_values_indexes = weights_values_indexes[::-1]
-weights = weights[weights_values_indexes][:7]
+weights = weights[weights_values_indexes]
+weights = weights[:6]
 print('--------------------Productive jumps-----------------------')
 print(weights)
 
