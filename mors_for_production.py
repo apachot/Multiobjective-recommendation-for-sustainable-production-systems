@@ -99,7 +99,9 @@ for i in range(0, len(idx_activities[0])):
 			hs_code_jump = productive_jumps[idx_jumps[0][j]][1]
 			hs_code_jump_92 = hs_code_jump
 			jump_description = ""
-			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code)) and (str(int(hs_code_jump)).zfill(4)[0:1] != '0')  and (str(int(hs_code_jump)).zfill(4)[0:1] != '1') ):
+			hs_meta_category = int(str(int(hs_code)).zfill(4)[0:1])
+			jump_meta_category = int(str(int(hs_code_jump)).zfill(4)[0:1])
+			if ((proximity_jump >= jump_level) and (int(hs_code_jump) != int(hs_code)) and ((hs_meta_category == jump_meta_category) or (hs_meta_category == (jump_meta_category-1)) or (hs_meta_category == (jump_meta_category+1)))):
 				#print('product jump HS1992 code:',hs_code_jump)
 				# jumps are in HS1992, we should convert in HS2017
 				idx_correspondence=  np.where(correspondance_HS2017_HS1992[:,1]==float(hs_code_jump))
