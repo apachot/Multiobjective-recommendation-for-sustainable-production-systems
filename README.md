@@ -16,4 +16,8 @@ For each production unit u we compute the scores ![equation](https://latex.codec
 
 ![equation](https://latex.codecogs.com/gif.latex?%5Chat%7Bp%7D%28x_i%20%5Cvert%20c%29%20%3D%20%5Csum_%7Bj%3D1%7D%5E%7Bn%7D%20%5Chat%7Bp%7D_%7Ba_j%7D%28x_i%20%5Cvert%20c%29%20%5Ctimes%20w_%7Ba_j%7D)
 
+This feature is part of the Atlas of Productive Synergies project : https://atlas.productive-synergies.com
+
+You can play with the multiobjectve recommender system here https://atlas.productive-synergies.com/produit/84/8708
+
 Presented at the MORS workshop held in conjunction with the 15th ACM Conference on Recommender Systems (RecSys), 2021, in Amsterdam, Netherlands.
